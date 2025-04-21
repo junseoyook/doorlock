@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 리모컨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f0f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .remote-container {
+            width: 300px;
+            background: #ffffff;
+            border-radius: 40px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .remote-header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 30px;
+        }
+
+        .remote-header h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .remote-header p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 0 10px;
+        }
+
+        .remote-button {
+            width: 100%;
+            height: 60px;
+            border: none;
+            border-radius: 30px;
+            background: #007AFF;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .remote-button:active {
+            transform: scale(0.98);
+            background: #0056b3;
+        }
+
+        .remote-button.power {
+            background: #FF3B30;
+        }
+
+        .remote-button.power:active {
+            background: #d63029;
+        }
+
+        .remote-status {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .status-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        @media (max-width: 320px) {
+            .remote-container {
+                width: 280px;
+                padding: 15px;
+            }
+
+            .remote-header h1 {
+                font-size: 20px;
+            }
+        }
+
+        /* 다크모드 지원 */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #000;
+            }
+
+            .remote-container {
+                background: #1c1c1e;
+            }
+
+            .remote-header h1 {
+                color: #fff;
+            }
+
+            .remote-header p {
+                color: #999;
+            }
+
+            .remote-header, .remote-status {
+                border-color: #333;
+            }
+
+            .status-text {
+                color: #999;
+            }
+
+            .status-time {
+                color: #666;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="remote-container">
+        <div class="remote-header">
+            <h1>스마트 도어락</h1>
+            <p>터치하여 제어하기</p>
+        </div>
+        
+        <div class="button-container">
+            <button class="remote-button" onclick="controlDoor('unlock')">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M12 17a2 2 0 100-4 2 2 0 000 4zm6-9a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V10a2 2 0 012-2h1V6a5 5 0 0110 0v2h1zm-6-5a3 3 0 00-3 3v2h6V6a3 3 0 00-3-3z"/>
+                </svg>
+                도어 열기
+            </button>
+            
+            <button class="remote-button power" onclick="controlDoor('lock')">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M12 17a2 2 0 100-4 2 2 0 000 4zm6-9a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V10a2 2 0 012-2h1V6a5 5 0 0110 0v2h1zm-6-5a3 3 0 00-3 3v2h6V6a3 3 0 00-3-3z"/>
+                </svg>
+                도어 잠금
+            </button>
+        </div>
+
+        <div class="remote-status">
+            <p class="status-text">리모컨 상태: 활성화</p>
+            <p class="status-time">만료 시간: <span id="expiryTime">2024-03-21 15:00</span></p>
+        </div>
+    </div>
+
+    <script>
+        function controlDoor(action) {
+            // 버튼 애니메이션 효과
+            const button = event.currentTarget;
+            button.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 200);
+
+            // SwitchBot API 호출
+            fetch('/api/control', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action: action })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 성공 시 진동 피드백 (지원되는 기기에서만)
+                    if (navigator.vibrate) {
+                        navigator.vibrate(100);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // 만료 시간 업데이트
+        function updateExpiryTime(expiryTime) {
+            document.getElementById('expiryTime').textContent = expiryTime;
+        }
+    </script>
+</body>
+</html> 
