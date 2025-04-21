@@ -9,18 +9,12 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24))
 
-# SwitchBot API 설정
-TOKEN = os.getenv('SWITCHBOT_TOKEN')
-DEVICE_ID = os.getenv('SWITCHBOT_DEVICE_ID')
-
-if not TOKEN or not DEVICE_ID:
-    raise ValueError("SWITCHBOT_TOKEN and SWITCHBOT_DEVICE_ID must be set in environment variables")
-
-url_manager = URLManager(TOKEN, DEVICE_ID)
+# Mock 설정으로 변경
+url_manager = URLManager(token="mock_token", device_id="mock_device")
 
 @app.route('/')
 def index():
-    return "SwitchBot Remote Control Server is running!"
+    return "Door Lock Remote Control Server is running!"
 
 @app.route('/remote/<customer_phone>')
 def remote_page(customer_phone):
@@ -49,17 +43,14 @@ def control_device():
         if action not in ['unlock', 'lock']:
             return jsonify({'success': False, 'error': 'Invalid action'}), 400
         
-        # SwitchBot API를 통한 디바이스 제어
-        if action == 'unlock':
-            # 도어 열기 명령
-            # 실제 SwitchBot API 호출 코드 필요
-            success = True
-        elif action == 'lock':
-            # 도어 잠금 명령
-            # 실제 SwitchBot API 호출 코드 필요
-            success = True
+        # Mock response
+        success = True
+        response_message = f"Door {action}ed successfully (Mock Response)"
         
-        return jsonify({'success': success})
+        return jsonify({
+            'success': success,
+            'message': response_message
+        })
     except Exception as e:
         app.logger.error(f"Error in control_device: {str(e)}")
         return jsonify({'success': False, 'error': 'Server error'}), 500

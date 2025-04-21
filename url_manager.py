@@ -1,7 +1,7 @@
-import requests
 import json
 from datetime import datetime, timedelta
 import sqlite3
+import uuid
 
 class URLManager:
     def __init__(self, token, device_id):
@@ -25,22 +25,14 @@ class URLManager:
         conn.close()
 
     def create_temporary_remote(self):
-        """SwitchBot API를 통해 임시 URL 생성"""
-        url = f"https://api.switch-bot.com/v1.1/devices/{self.device_id}/commands/temporary"
-        headers = {
-            "Authorization": self.token,
-            "Content-Type": "application/json"
-        }
-        
+        """Mock URL 생성"""
         try:
-            response = requests.post(url, headers=headers)
-            response.raise_for_status()
-            result = response.json()
-            if result["statusCode"] == 100:
-                return result["body"]["url"]
-            return None
+            # 고유한 UUID를 사용하여 mock URL 생성
+            unique_id = str(uuid.uuid4())
+            mock_url = f"/remote/{unique_id}"
+            return mock_url
         except Exception as e:
-            print(f"URL 생성 중 오류 발생: {str(e)}")
+            print(f"Mock URL 생성 중 오류 발생: {str(e)}")
             return None
 
     def create_customer_url(self, customer_phone, valid_hours=24):
@@ -127,9 +119,9 @@ class URLManager:
         conn.close()
 
 def main():
-    # SwitchBot API 설정
-    TOKEN = "YOUR_API_TOKEN"
-    DEVICE_ID = "YOUR_DEVICE_ID"
+    # Mock 설정
+    TOKEN = "mock_token"
+    DEVICE_ID = "mock_device"
     
     # URL 관리자 초기화
     url_manager = URLManager(TOKEN, DEVICE_ID)
